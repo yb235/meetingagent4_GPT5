@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenAI Tool Schemas",
+  "type": "object",
+  "properties": {
+    "send_brief_update": {
+      "type": "object",
+      "properties": {
+        "topic": { "type": "string" },
+        "summary": { "type": "string", "minLength": 10 },
+        "actionItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "owner": { "type": "string" },
+              "item": { "type": "string" }
+            },
+            "required": ["item"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["summary"],
+      "additionalProperties": false
+    },
+    "plan_live_question": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "minLength": 3 },
+        "priority": { "type": "string", "enum": ["polite", "interrupt", "next-turn"] }
+      },
+      "required": ["text"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
