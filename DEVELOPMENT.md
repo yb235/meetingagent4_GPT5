@@ -1,6 +1,10 @@
-# Meeting Agent Development Environment
+# Meeting Agent Development Guide
 
-This is a template for your local .env file. Copy this to .env and fill in your API keys.
+This guide will help you set up your development environment for the Meeting Agent system.
+
+## Environment Variables
+
+The system requires several API keys to function. Copy `.env.example` to `.env` and fill in your API keys:
 
 ```bash
 # Recall.ai

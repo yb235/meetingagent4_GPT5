@@ -25,7 +25,7 @@ This system consists of four main services:
 ### Prerequisites
 
 - Node.js 20+
-- Docker and Docker Compose
+- Docker and Docker Compose v2+ (the new `docker compose` command, not `docker-compose`)
 - API Keys for:
   - Recall.ai
   - Deepgram
@@ -59,13 +59,15 @@ npm run build
 
 Start all services:
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Or build and start:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
+
+**Note:** This project uses Docker Compose v2+ format. If you have an older version, you may need to use `docker-compose` (with hyphen) instead of `docker compose`.
 
 ### Running Locally (Development)
 
