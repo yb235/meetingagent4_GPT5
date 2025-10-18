@@ -13,7 +13,7 @@ RUN npm install
 # Copy source
 COPY packages/agent-service ./packages/agent-service
 COPY packages/shared ./packages/shared
-COPY config ./config
+COPY config/tsconfig.json ./config/tsconfig.json
 
 # Build
 RUN npm run build --workspace=@meetingagent/shared
