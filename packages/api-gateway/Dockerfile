@@ -13,7 +13,7 @@ RUN npm install
 # Copy source
 COPY packages/api-gateway ./packages/api-gateway
 COPY packages/shared ./packages/shared
-COPY tsconfig.json ./
+COPY config ./config
 
 # Build
 RUN npm run build --workspace=@meetingagent/shared
