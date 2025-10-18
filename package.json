@@ -9,8 +9,10 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "dev": "docker-compose up"
+    "lint": "eslint --config config/.eslintrc.json packages/*/src/**/*.ts",
+    "format": "prettier --config config/.prettierrc.json --write \"packages/*/src/**/*.{ts,js,json}\"",
+    "dev": "docker-compose up",
+    "health-check": "bash scripts/test-health.sh"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
