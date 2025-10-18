@@ -7,3 +7,4 @@ coverage/
 *.tsbuildinfo
 .vscode/
 .idea/
+.env*
