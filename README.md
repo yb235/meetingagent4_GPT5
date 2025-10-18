@@ -4,12 +4,13 @@ A consolidated meeting agent that joins live Zoom/Teams/Google Meet meetings, pr
 
 ## Architecture
 
-This system consists of four main services:
+This system consists of five main services:
 
 1. **API Gateway** (port 3000) - Handles webhooks from Recall.ai and user APIs
 2. **Audio Gateway** (port 3001) - Manages Recall.ai media socket and Deepgram STT
 3. **Agent Service** (port 3002) - OpenAI-powered reasoning and orchestration
 4. **TTS Service** (port 3003) - Deepgram Aura TTS for voice injection
+5. **Frontend** (port 3004) - React web UI for meeting control and monitoring
 
 ## Technology Stack
 
@@ -57,15 +58,17 @@ npm run build
 
 ### Running with Docker Compose
 
-Start all services:
-```bash
-docker compose up
-```
-
-Or build and start:
+Start all services including the UI:
 ```bash
 docker compose up --build
 ```
+
+This will start:
+- API Gateway on http://localhost:3000
+- Audio Gateway on http://localhost:3001
+- Agent Service on http://localhost:3002
+- TTS Service on http://localhost:3003
+- **Frontend UI on http://localhost:3004** ← Open this in your browser!
 
 **Note:** This project uses Docker Compose v2+ format. If you have an older version, you may need to use `docker-compose` (with hyphen) instead of `docker compose`.
 
@@ -89,7 +92,13 @@ npm run dev
 # Terminal 4 - TTS Service
 cd packages/tts-service
 npm run dev
+
+# Terminal 5 - Frontend UI
+cd packages/frontend
+npm run dev
 ```
+
+Then open http://localhost:3004 in your browser.
 
 ## API Endpoints
 
@@ -116,6 +125,15 @@ npm run dev
 - `GET /health` - Health check
 - `POST /synthesize` - Generate and inject speech
 
+## Using the Web UI
+
+1. **Start all services** with `docker compose up --build`
+2. **Open the UI** at http://localhost:3004
+3. **Enter a meeting link** (Zoom, Teams, or Google Meet)
+4. **Click "Deploy AI Bot"** to join the meeting
+5. **View live transcripts** and **AI briefs** as the meeting progresses
+6. **Ask questions** by typing them and selecting a speaking strategy
+
 ## Testing Health Endpoints
 
 ```bash
@@ -130,6 +148,9 @@ curl http://localhost:3002/health
 
 # TTS Service
 curl http://localhost:3003/health
+
+# Frontend (browser only)
+open http://localhost:3004
 ```
 
 ## Project Structure

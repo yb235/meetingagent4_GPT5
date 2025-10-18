@@ -59,3 +59,21 @@ services:
       - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000
+      - VITE_WS_URL=http://localhost:3001
+    depends_on:
+      - api-gateway
+      - audio-gateway
+      - agent-service
+      - tts-service
+    volumes:
+      - ./packages/frontend/src:/app/packages/frontend/src

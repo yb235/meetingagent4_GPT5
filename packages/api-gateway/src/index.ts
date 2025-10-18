@@ -14,6 +14,17 @@ const logger = pino({
 const app = express();
 const PORT = process.env.API_GATEWAY_PORT || 3000;
 
+// CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(pinoHttp({ logger }));
 
@@ -86,6 +97,49 @@ app.get('/meetings/:meetingId', (req: Request, res: Response) => {
     res.json({ meetingId, status: 'active' });
   } catch (error) {
     logger.error({ error }, 'Error getting meeting status');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// User API: Join a meeting
+app.post('/meetings/join', (req: Request, res: Response) => {
+  try {
+    const { meetingLink, botName, enableAudio, enableVideo } = req.body;
+
+    logger.info({ meetingLink, botName }, 'Join meeting request');
+
+    // TODO: Call Recall.ai API to create bot and join meeting
+    // For now, return mock success response
+    const meetingId = `meeting-${Date.now()}`;
+    const botId = `bot-${Date.now()}`;
+
+    res.status(200).json({ 
+      meetingId, 
+      botId,
+      status: 'joining',
+      message: 'Bot is joining the meeting'
+    });
+  } catch (error) {
+    logger.error({ error }, 'Error joining meeting');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// User API: Leave a meeting
+app.post('/meetings/:meetingId/leave', (req: Request, res: Response) => {
+  try {
+    const { meetingId } = req.params;
+
+    logger.info({ meetingId }, 'Leave meeting request');
+
+    // TODO: Call Recall.ai API to stop bot
+    
+    res.status(200).json({ 
+      status: 'left',
+      message: 'Bot has left the meeting'
+    });
+  } catch (error) {
+    logger.error({ error }, 'Error leaving meeting');
     res.status(500).json({ error: 'Internal server error' });
   }
 });

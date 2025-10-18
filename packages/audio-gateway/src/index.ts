@@ -1,4 +1,6 @@
 import express, { Request, Response } from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import WebSocket from 'ws';
 import dotenv from 'dotenv';
 import pino from 'pino';
@@ -12,9 +14,37 @@ const logger = pino({
 });
 
 const app = express();
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
 const PORT = process.env.AUDIO_GATEWAY_PORT || 3001;
 
+// CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
+
+// Socket.IO connection handler for frontend
+io.on('connection', (socket) => {
+  logger.info({ socketId: socket.id }, 'Frontend client connected');
+
+  socket.on('disconnect', () => {
+    logger.info({ socketId: socket.id }, 'Frontend client disconnected');
+  });
+});
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
@@ -145,8 +175,9 @@ class AudioGateway {
   }
 }
 
-app.listen(PORT, () => {
-  logger.info({ port: PORT }, 'Audio Gateway started');
+httpServer.listen(PORT, () => {
+  logger.info({ port: PORT }, 'Audio Gateway started with WebSocket support');
 });
 
 export default app;
+export { io };
