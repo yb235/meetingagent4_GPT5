@@ -142,19 +142,27 @@ meetingagent4_GPT5/
 │   ├── agent-service/     # OpenAI orchestration
 │   ├── tts-service/       # Speech synthesis
 │   └── shared/            # Common types and schemas
+├── docs/                  # All documentation files
+├── config/                # Configuration files (ESLint, Prettier, TypeScript)
+├── scripts/               # Utility scripts
 ├── schema/                # JSON schemas for tools
 ├── docker-compose.yml     # Docker orchestration
-└── Documentation files
+└── README.md
 ```
 
 ## Documentation
 
-- `Architecture.md` - System design and data flows
-- `implementationguide.md` - Step-by-step implementation guide
-- `prompts.md` - OpenAI system prompts and tool schemas
-- `testplans.md` - Testing strategy
-- `operations.md` - Deployment and monitoring
-- `securityprivacy.md` - Security and compliance
+All project documentation is organized in the [`docs/`](docs/) folder. Key documents include:
+
+- **[Architecture Overview](docs/Architecture.md)** - System design and data flows
+- **[Development Guide](docs/DEVELOPMENT.md)** - Development workflow and best practices
+- **[Implementation Guide](docs/implementationguide.md)** - Step-by-step implementation guide
+- **[Prompts Reference](docs/prompts.md)** - OpenAI system prompts and tool schemas
+- **[Test Plans](docs/testplans.md)** - Testing strategy
+- **[Operations Guide](docs/operations.md)** - Deployment and monitoring
+- **[Security & Privacy](docs/securityprivacy.md)** - Security and compliance
+
+See the [Documentation Index](docs/README.md) for a complete list of available documentation.
 
 ## Development
 
