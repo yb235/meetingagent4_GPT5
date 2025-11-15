@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import pino from 'pino';
 import OpenAI from 'openai';
+import fetch from 'node-fetch';
 import {
   TranscriptSegment,
   BriefUpdate,
@@ -180,6 +181,17 @@ class AgentOrchestrator {
 
     // TODO: Send brief to user console/notifier
     this.lastBriefTime.set(meetingId, now);
+
+    // Broadcast brief to frontend via audio-gateway (fire-and-forget)
+    try {
+      await fetch('http://audio-gateway:3001/broadcast/brief', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingId, brief })
+      }).catch(() => undefined);
+    } catch {
+      // ignore broadcast errors
+    }
   }
 
   private getOrCreateContext(meetingId: string): MeetingContext {

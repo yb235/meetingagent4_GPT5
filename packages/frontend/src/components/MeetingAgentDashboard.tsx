@@ -27,7 +27,6 @@ export function MeetingAgentDashboard() {
   
   const { 
     isConnected, 
-    activeMeetings, 
     transcripts,
     briefs,
   } = useMeetingSocket()

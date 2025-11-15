@@ -48,6 +48,20 @@ Runbooks
 - Database connection saturation:
   - Increase pool size; add caching; review N+1 in agent-service
 
+Meeting Agent UI runbook
+- UI not loading:
+  - Check `docker compose ps`; ensure `frontend` is Up on 3004
+  - Tail logs: `docker compose logs -f frontend`
+  - Verify `VITE_API_URL` and `VITE_WS_URL` environment variables
+- No transcripts in UI:
+  - Confirm audio-gateway /health
+  - Check Socket.IO connection in browser devtools Network → WS
+  - Verify broadcasts: POST to `http://localhost:3001/broadcast/transcript`
+- No briefs in UI:
+  - Confirm agent-service processes tool calls
+  - Check agent-service logs for `Sending brief update`
+  - Verify broadcasts: POST to `http://localhost:3001/broadcast/brief`
+
 Cost controls
 - Cap concurrency on agent-service
 - Throttle briefs

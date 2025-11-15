@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -16,9 +16,17 @@ COPY config/tsconfig.json ./config/tsconfig.json
 # Build
 RUN cd packages/frontend && npm run build
 
-# Expose port
-EXPOSE 3004
+FROM nginx:alpine
 
-# Start dev server (for development)
-CMD ["npm", "run", "dev", "--workspace=@meetingagent/frontend"]
+WORKDIR /usr/share/nginx/html
+
+# Copy built assets
+COPY --from=build /app/packages/frontend/dist .
+
+# Nginx config to proxy API and WS
+COPY packages/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
 

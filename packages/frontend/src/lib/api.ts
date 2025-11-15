@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+// Use same-origin proxy in dev/prod via Vite (dev) and Nginx (prod)
+const API_BASE_URL = '/api'
 
 interface ApiResponse<T = any> {
   success: boolean

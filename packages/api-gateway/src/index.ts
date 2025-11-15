@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { RecallWebhookEvent, AskRequest } from '@meetingagent/shared';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -51,7 +52,19 @@ app.post('/webhooks/recall', (req: Request, res: Response) => {
           { meetingId: event.meetingId, mediaSocketUrl: event.mediaSocketUrl },
           'Media socket ready'
         );
-        // TODO: Notify audio-gateway with media socket URL
+        // Notify audio-gateway with media socket URL
+        try {
+          fetch('http://audio-gateway:3001/connect-media', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              meetingId: event.meetingId,
+              mediaSocketUrl: event.mediaSocketUrl,
+            }),
+          }).catch(() => undefined);
+        } catch {
+          // ignore
+        }
         break;
       case 'meeting.ended':
         logger.info({ meetingId: event.meetingId }, 'Meeting ended');
@@ -77,6 +90,16 @@ app.post('/meetings/:meetingId/ask', (req: Request, res: Response) => {
 
     // TODO: Validate request
     // TODO: Forward to agent-service for planning
+    // Broadcast question asked to frontend (fire-and-forget)
+    try {
+      fetch('http://audio-gateway:3001/broadcast/question-asked', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingId, question: askRequest.text, strategy: askRequest.priority })
+      }).catch(() => undefined);
+    } catch {
+      // ignore broadcast errors
+    }
 
     res.status(202).json({ status: 'accepted', meetingId });
   } catch (error) {
@@ -112,6 +135,17 @@ app.post('/meetings/join', (req: Request, res: Response) => {
     // For now, return mock success response
     const meetingId = `meeting-${Date.now()}`;
     const botId = `bot-${Date.now()}`;
+
+    // Broadcast meeting joined for UI
+    try {
+      fetch('http://audio-gateway:3001/broadcast/meeting-joined', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meetingId, botId })
+      }).catch(() => undefined);
+    } catch {
+      // ignore broadcast errors
+    }
 
     res.status(200).json({ 
       meetingId, 

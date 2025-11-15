@@ -46,10 +46,101 @@ io.on('connection', (socket) => {
   });
 });
 
+// Broadcast endpoints for backend services to push events to UI
+app.post('/broadcast/meeting-joined', (req: Request, res: Response) => {
+  try {
+    const { meetingId, botId } = req.body || {};
+    if (!meetingId) return res.status(400).json({ error: 'meetingId required' });
+    io.emit('meeting:joined', { meetingId, botId });
+    res.json({ ok: true });
+  } catch (error) {
+    logger.error({ error }, 'Error broadcasting meeting joined');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/broadcast/meeting-ended', (req: Request, res: Response) => {
+  try {
+    const { meetingId } = req.body || {};
+    if (!meetingId) return res.status(400).json({ error: 'meetingId required' });
+    io.emit('meeting:ended', { meetingId });
+    res.json({ ok: true });
+  } catch (error) {
+    logger.error({ error }, 'Error broadcasting meeting ended');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/broadcast/transcript', (req: Request, res: Response) => {
+  try {
+    const segment: TranscriptSegment = req.body;
+    if (!segment?.meetingId || !segment?.text) {
+      return res.status(400).json({ error: 'invalid segment' });
+    }
+    io.emit('transcript:update', {
+      id: segment.id,
+      meetingId: segment.meetingId,
+      text: segment.text,
+      speaker: segment.speaker,
+      isFinal: segment.isFinal,
+      timestamp: new Date().toISOString(),
+    });
+    res.json({ ok: true });
+  } catch (error) {
+    logger.error({ error }, 'Error broadcasting transcript');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/broadcast/brief', (req: Request, res: Response) => {
+  try {
+    const { meetingId, brief } = req.body || {};
+    if (!meetingId || !brief?.summary) {
+      return res.status(400).json({ error: 'meetingId and brief.summary required' });
+    }
+    io.emit('brief:update', {
+      meetingId,
+      brief: {
+        topic: brief.topic,
+        summary: brief.summary,
+        actionItems: brief.actionItems,
+        timestamp: new Date().toISOString(),
+      },
+    });
+    res.json({ ok: true });
+  } catch (error) {
+    logger.error({ error }, 'Error broadcasting brief');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/broadcast/question-asked', (req: Request, res: Response) => {
+  try {
+    const { meetingId, question, strategy } = req.body || {};
+    if (!meetingId || !question) {
+      return res.status(400).json({ error: 'meetingId and question required' });
+    }
+    io.emit('question:asked', { meetingId, question, strategy, timestamp: new Date().toISOString() });
+    res.json({ ok: true });
+  } catch (error) {
+    logger.error({ error }, 'Error broadcasting question asked');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'healthy', service: 'audio-gateway', timestamp: Date.now() });
 });
+
+// Manage one gateway instance per process (simple for now)
+const gateway = new (class GatewayManager {
+  private instance: AudioGateway | null = null;
+  get(): AudioGateway {
+    if (!this.instance) this.instance = new AudioGateway();
+    return this.instance;
+  }
+})();
 
 // Endpoint to connect to Recall.ai media socket
 app.post('/connect-media', async (req: Request, res: Response) => {
@@ -58,9 +149,11 @@ app.post('/connect-media', async (req: Request, res: Response) => {
 
     logger.info({ meetingId, mediaSocketUrl }, 'Connecting to media socket');
 
-    // TODO: Connect to Recall.ai media WebSocket
-    // TODO: Setup Deepgram streaming connection
-    // For now, just acknowledge
+    // Connect to Recall.ai media WebSocket and initialize Deepgram streaming
+    gateway.get().connectToRecallMedia(String(meetingId), String(mediaSocketUrl)).catch((error) => {
+      logger.error({ error, meetingId }, 'Failed to connect to media socket');
+    });
+
     res.status(202).json({ status: 'connecting', meetingId });
   } catch (error) {
     logger.error({ error }, 'Error connecting to media socket');
@@ -149,7 +242,17 @@ class AudioGateway {
 
         logger.info({ segment }, isFinal ? 'Final transcript' : 'Partial transcript');
 
-        // TODO: Forward transcript segment to agent-service
+      // Emit to frontend via WebSocket
+      io.emit('transcript:update', {
+        id: segment.id,
+        meetingId: segment.meetingId,
+        text: segment.text,
+        speaker: segment.speaker,
+        isFinal: segment.isFinal,
+        timestamp: new Date().toISOString(),
+      });
+
+      // TODO: Forward transcript segment to agent-service
       }
     });
 

@@ -30,9 +30,22 @@ interface UseMeetingSocketProps {
 }
 
 export function useMeetingSocket({ 
-  url = import.meta.env.VITE_WS_URL || 'http://localhost:3001',
+  url,
   autoConnect = true 
 }: UseMeetingSocketProps = {}) {
+  // Derive default WS URL from window.location (works behind reverse proxy)
+  const defaultUrl = (() => {
+    try {
+      const loc = window.location;
+      const proto = loc.protocol === 'https:' ? 'wss' : 'ws';
+      // socket.io client uses http(s) base; we compute from window location
+      const httpProto = proto === 'wss' ? 'https' : 'http';
+      return `${httpProto}://${loc.host}`;
+    } catch {
+      return 'http://localhost:3001';
+    }
+  })();
+  url = url || defaultUrl;
   const [isConnected, setIsConnected] = useState(false);
   const [activeMeetings, setActiveMeetings] = useState<Record<string, MeetingState>>({});
   const [transcripts, setTranscripts] = useState<Record<string, TranscriptSegment[]>>({});

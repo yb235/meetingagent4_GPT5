@@ -13,6 +13,11 @@ This directory contains all documentation for the Meeting Agent System.
 - [Implementation Guide](implementationguide.md) - Step-by-step implementation details
 - [Meeting Agent Implementation Guide](meeting-agent-implementation-guide.md) - Detailed implementation with Recall.ai, Deepgram, and OpenAI
 
+### UI & API
+- [Frontend Guide](frontend.md) - Web UI features and setup
+- [API Reference](api.md) - REST endpoints and payloads
+- [WebSocket Events](ws-events.md) - Realtime event contracts
+
 ### Development & Testing
 - [Test Plans](testplans.md) - Testing strategy and test cases
 - [Acceptance Criteria](acceptancecriteria.md) - Project acceptance criteria
